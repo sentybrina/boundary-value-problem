@@ -1,0 +1,53 @@
+from math import pi, tan, cos, sin, exp
+
+# функция пси
+def psi(z, betta, p, delta_t, c, a):
+    return (betta * exp(-betta * z) * p * delta_t) / (c * pi * a**2)
+
+# функция для подсчета трансцендентного уравнения
+def function(mu, k, alpha, L):
+   # return tan(mu) - k * mu / (alpha * L)
+    return (alpha * L / k) * sin(mu) - mu * cos(mu)
+
+#метод дихотомии, который находит значения корней трансцендентного уравнения
+def dichotomy(a, b, k, alpha, L):
+    if a > b:
+        a, b = b, a
+    eps = 1e-10 # 10^(-10)
+    c = 0
+    while abs(b - a) > eps:
+        c = (a+b) / 2.0
+        fc = function(c, k, alpha, L)
+        fa = function(a, k, alpha, L)
+        if fa * fc > 0:
+            a = c
+        else:
+            b = c
+    return c
+
+# метод умной дихотомии, который находит заданное количество корней
+# n - кол-во корней, которое необходимо посчитать
+def smart_dichotomy_v2(n, k, alpha, L):
+    roots = []
+    i = 0
+    while i < n:
+        x = dichotomy(pi * i, pi * (i + 0.5), k, alpha, L)
+        roots.append(x)
+        print("root [{:d}] = {:f}".format(i, x))
+        i = i + 1
+
+    return roots
+
+#функция подсчета суммы ряда 
+def sum_series(betta, p, delta_t, L, c, a, size, mu, z, k, t, alpha):
+    n = 0
+    sum = 0
+    koef = (2 * betta * p * delta_t) / (c * pi * a*a * L)
+    while n < size:
+        v_n = sin(mu[n] * z / L)
+        a_n = (exp(-betta * L) * (-betta - alpha/k) * sin(mu[n]) + mu[n] / L) / (betta**2 + (mu[n]/L)**2)
+        y_n = a_n * exp((-mu[n] * k * t) / (c * L))
+        sum = sum + v_n * y_n
+        n = n + 1
+    sum = sum * koef
+    return sum

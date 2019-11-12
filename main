@@ -30,9 +30,11 @@ if __name__ == '__main__':
     z1 = 0
     z2 = 5
 
+   #mu - массив, в котором содержатся корни трансцендентного уравнения
     mu = smart_dichotomy_v2(n, k, alpha, L)
 
     X = numpy.arange(z1, z2, 1e-3)
+    #массив, в который заносятся значения суммы ряда, в каждой точке z на отрезке [z1, z2]
     function_U = []
     for z in X:
         function_U.append(sum_series(betta, p, delta_t, L, c, a, n, mu, z, k, t, alpha))

@@ -1,0 +1,121 @@
+import math
+from matplotlib import pyplot as plt
+import numpy
+from functions_task2 import *
+
+if __name__ == '__main__':
+   # n = float(input("Введите количество корней n = "))
+   # L = float(input("Введите L = "))
+   # k = float(input("Введите k = "))
+   # alpha = float(input("Введите alpha = "))
+   # delta_t = float(input("Введите время delta_t = "))
+   # c = float(input("Введите c = "))
+   # betta = float(input("Введите betta = "))
+   # p = float(input("Введите p = "))
+   # a = float(input("Введите a = "))
+   # print("Введите границы отрезка z = ")
+   # z1 = float(input("z1 = "))
+   # z2 = float(input("z2 = "))
+
+    n = 100
+    L = 5
+    K_T = 0.2
+    alpha = 0.005
+    delta_t = 0.1
+    t = 0.5
+    c = 1.84
+    betta = 1
+    p = 30
+    a = 0.5
+    z1 = 0
+    z2 = 5
+    T = 10
+    I = 100
+    K = 1000
+    k = 100
+
+    mu = smart_dichotomy_v2(n, K_T, alpha, L)
+    X = numpy.arange(z1, z2, 1e-3)
+    function_U = []
+    function_psi = []
+
+    x_count = len(X)
+
+    mas_betta_schema = []
+    mas_betta_sum = []
+    mas_K_T_schema = []
+    mas_K_T_sum = []
+
+    for i in range(I + 1):
+     if i < (I + 1) / 2:
+      mas_betta_schema.append(0.01)
+     else:
+      mas_betta_schema.append(0.1)
+
+    for i in range(x_count):
+     if i < x_count / 2:
+      mas_betta_sum.append(0.01)
+     else:
+      mas_betta_sum.append(0.1)
+
+    for i in range(I + 1):
+     if i < (I + 1)/ 2:
+      mas_K_T_schema.append(0.2)
+     else:
+      mas_K_T_schema.append(0.1)
+
+    for i in range(x_count):
+     if i < x_count / 2:
+      mas_K_T_sum.append(0.2)
+     else:
+      mas_K_T_sum.append(0.1)
+
+
+    print ([mas_betta_schema])
+    print(len(mas_betta_schema))
+    print ([mas_K_T_schema])
+    print (len(mas_K_T_schema))
+
+    m = 0
+    for z in X:
+     function_U.append(sum_series(mas_betta_sum[m], p, delta_t, L, c, a, n, mu, z, mas_K_T_sum[m], k * T / K, alpha))
+     function_psi.append(psi(z, mas_betta_sum[m], p, delta_t, c, a))
+     m = m + 1
+
+    plt.plot(X, function_U, color="blue", label="график ряда")
+    plt.legend()
+    plt.grid()
+    #plt.show()
+
+    plt.plot(X, function_psi, color="red", label="psi")
+    #plt.plot(X, [psi(e, betta, p, delta_t, c, a) for e in X], color="red", label="psi")
+    plt.legend()
+    plt.grid()
+    #plt.show()
+
+    """N = 10001
+    z, u = schema(I, K, T, K_T, c, L, betta, p, delta_t, a, alpha)
+    plt.plot(z, u, color="blue", label="график для разностной схемы (для слоя k=1)")
+    plt.legend()
+    plt.grid()
+    plt.show()"""
+
+
+    #t_axis, z_axis, u = full_schema(I, K, T, K_T, c, L, betta, p, delta_t, a, alpha)
+    t_axis, z_axis, u = full_schema(I, K, T, mas_K_T_schema, c, L, mas_betta_schema, p, delta_t, a, alpha)
+
+    plt.plot(z_axis, u[k], label="k слой через разностную схему", color="green")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    """"
+    z_, t_ = numpy.meshgrid(z_axis, t_axis)
+    fig = plt.figure()
+    # без следующей строчки не работает projection='3d'
+    from mpl_toolkits.mplot3d import Axes3D
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+
+    surf = ax.plot_surface(z_, t_, numpy.array(u), cmap='RdYlGn')
+    plt.show()
+    """""

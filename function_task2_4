@@ -1,0 +1,101 @@
+from math import pi, tan, cos, sin, exp
+
+import numpy
+
+"""
+def psi(z, betta, p, delta_t, c, a):
+    return (betta * exp(-betta * z) * p * delta_t) / (c * pi * a * a)
+
+def psi(z, p, delta_t, R, a, l1, betta, c):
+    return p*delta_t/(R*R*pi)*betta[0]*exp(-betta[0]*z)/c[0]
+    #(1-exp(-(R/a)*(R/a)))*
+    else:
+        return p * delta_t / (R * R * pi) * betta[1] * exp(-betta[1] * z) / c[1]
+    #* (1 - exp(-(R / a) * (R / a)))
+"""
+def psi(z, p, delta_t, R, betta, c):
+    return p*delta_t/(R*R*pi)*betta*exp(-betta*z)/c
+
+def function(mu, K_T, alpha, L):
+    return mu*sin(mu)-alpha*L*cos(mu)/K_T
+
+
+def dichotomy(a, b, K_T, alpha, L):
+    if a > b:
+        a, b = b, a
+    eps = 1e-10  # 10^(-10)
+    c = 0
+    while abs(b - a) > eps:
+        c = (a + b) / 2.0
+        fc = function(c, K_T, alpha, L)
+        fa = function(a, K_T, alpha, L)
+        if fa * fc > 0:
+            a = c
+        else:
+            b = c
+    return c
+
+
+def smart_dichotomy_v2(n, K_T, alpha, L):
+    roots = []
+    i = 0
+    while i < n:
+        x = dichotomy(pi * i, pi * (i + 1), K_T, alpha, L)
+        roots.append(x)
+        print("root [{:d}] = {:f}".format(i, x))
+        i = i + 1
+
+    return roots
+
+def sum_series(betta, p, delta_t, L, c, a, size, mu, z, K_T, t, alpha):
+    sum = 0
+    koef = (betta * p * delta_t) / (c * pi * a * a)
+    for n in range(size):
+        v_n = cos(mu[n] * z / L)
+        a_n = 4*mu[n]*(exp(-betta*L)*(-betta * cos(mu[n]) + mu[n] / L * sin(mu[n]))+betta)/((betta*betta+mu[n]*mu[n]/L/L)*(2*mu[n]*L+L*sin(2*mu[n])))
+        y_n = exp((-mu[n]) * mu[n] * K_T * t / c / L / L)
+        sum = sum + v_n * y_n * a_n
+    sum = sum * koef
+    return sum
+
+def full_schema(I, K, T, K_T, c, L, betta, p, delta_t, R, alpha):
+    """
+   Метод возвращает решение на прореженной сетке
+   Т.е. функция u(z,t) ищется с помощью разностной схемы,
+   затем найденная функция прореживается таким образом, чтобы размерности
+   двумерного массива стали одинаковыми, это необходимо для построени графика двумерной сеточной функции
+   """
+    h_z = L / I
+    h_t = T / K
+    gamma = K_T * h_t / c / h_z / h_z
+
+    # массив размером  K + 1 на I + 1, shape - размер
+    u = numpy.zeros(shape=(K + 1, I + 1))
+
+    for i in range(I + 1):
+        u[0][i] = psi(h_z * i, p, delta_t, R, betta, c)
+
+    for j in range(0, K):
+        u[j + 1][0] = 2 * gamma * u[j][1] + (1 - 2 * gamma) * u[j][0]
+        for i in range(1, I):
+            u[j + 1][i] = gamma * (u[j][i + 1] + u[j][i - 1]) + (1 - 2 * gamma) * u[j][i]
+        u[j + 1][I] = 2 * gamma * u[j][I - 1] + (-2 * alpha * h_t / c / h_z + 1 - 2 * gamma) * u[j][I]
+
+    q = []
+    a = K // I
+
+    for j in range(0, K + 1, a):
+        q.append([])
+        for i in range(I + 1):
+            q[j // a].append(u[j][i])
+
+    t_axis = []
+    z_axis = []
+    for j in range(0, K + 1, a):
+        t_axis.append(j * h_t)
+
+    for i in range(I + 1):
+        z_axis.append(i * h_z)
+
+    return t_axis, z_axis, u
+

@@ -1,0 +1,174 @@
+import math
+from matplotlib import pyplot as plt
+from matplotlib import mlab
+import numpy
+from functions_task2 import *
+from rest_series import *
+
+if __name__ == '__main__':
+    n = 50
+    L = 5
+    K_T = 0.1
+    alpha = 0.005
+    delta_t = 1
+    t = 20
+    p = 30
+    z1 = 0
+    z2 = 5
+    T = 10
+    I = 10
+    K = 1000
+    eps = 0.001
+    N = 1
+    c = 1
+    betta = 0.05
+    R = 3
+    a = 0.1*R
+    #оценка остатка ряда
+    r_s = rest_series(L, betta, alpha, p, delta_t, a, K_T, c, N, t)
+
+    #вычисление количества слагаемых в конечном ряду
+    while r_s > eps:
+        r_s = rest_series(L, betta, alpha, p, delta_t, a, K_T, c, N, t)
+        N = N + 1
+    print("N = {:f}, r_s = {:f}".format(N, r_s))
+
+    #построение графиков решений
+
+    #вычисление n корней трансцендентного уравнения
+    mu = smart_dichotomy_v2(n, K_T, alpha, L)
+
+    #создание и заполнение массива суммы ряда для построения графика аналитического решения
+    X = numpy.arange(z1, z2, 0.5)
+    function_U = []
+    for z in X:
+        function_U.append(sum_series(betta, p, delta_t, L, c, R, a, n, mu, z, K_T, 0, alpha))
+
+    plt.plot(X, function_U, color="red", label="график ряда")
+    plt.legend()
+    plt.grid()
+    #plt.show()
+
+    # построение решения с помощью явной схемы
+    c_mas_sh1 = []
+    betta_mas_sh1 = []
+    K_T_mas_sh1 = []
+    for i in range(10 + 1):
+        if (i < (10 + 1) / 2):
+            c_mas_sh1.append(1)
+            betta_mas_sh1.append(0.05)
+            K_T_mas_sh1.append(0.1)
+        else:
+            c_mas_sh1.append(1)
+            betta_mas_sh1.append(0.05)
+            K_T_mas_sh1.append(0.1)
+
+    c_mas_sh2 = []
+    betta_mas_sh2 = []
+    K_T_mas_sh2 = []
+    for i in range(20 + 1):
+        if (i < (20 + 1) / 2):
+            c_mas_sh2.append(1)
+            betta_mas_sh2.append(0.05)
+            K_T_mas_sh2.append(0.1)
+        else:
+            c_mas_sh2.append(1)
+            betta_mas_sh2.append(0.05)
+            K_T_mas_sh2.append(0.1)
+
+    c_mas_sh3 = []
+    betta_mas_sh3 = []
+    K_T_mas_sh3 = []
+    for i in range(50 + 1):
+        if (i < (50 + 1) / 2):
+            c_mas_sh3.append(1)
+            betta_mas_sh3.append(0.05)
+            K_T_mas_sh3.append(0.1)
+        else:
+            c_mas_sh3.append(1)
+            betta_mas_sh3.append(0.05)
+            K_T_mas_sh3.append(0.1)
+
+    t_axis, z_axis, u_1 = full_schema(10, 100, T, K_T_mas_sh1, c_mas_sh1, L, betta_mas_sh1, p, delta_t, R, a, alpha)
+    t_axis, z_axis, u_2 = full_schema(20, 400, T, K_T_mas_sh2, c_mas_sh2, L, betta_mas_sh2, p, delta_t, R, a, alpha)
+    t_axis, z_axis, u_3 = full_schema(50, 2500, T, K_T_mas_sh3, c_mas_sh3, L, betta_mas_sh3, p, delta_t, R, a, alpha)
+
+    plt.plot(z_axis, u_1[50], label="k слой РС u_1", color="green")
+    plt.plot(z_axis, u_2[50], label="k слой РС u_2", color="blue")
+    plt.plot(z_axis, u_3[50], label="k слой РС u_3", color="purple")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    """""
+    #решение двухслойной задачи
+
+    #создание и заполнение массива функции пси
+    #PSI = [psi(e, betta, p, delta_t, c, a) for e in X]
+
+    c_mas = []
+    betta_mas = []
+    K_T_mas = []
+    x_count = len(X)
+    for i in range(x_count):
+        if (i < x_count / 2):
+            c_mas.append(1)
+            betta_mas.append(0.05)
+            K_T_mas.append(0.1)
+        else:
+            c_mas.append(1)
+            betta_mas.append(0.5)
+            K_T_mas.append(0.5)
+
+    print("-------c-------")
+    print(c_mas)
+    print("-------betta-------")
+    print(betta_mas)
+    print("-------K_T-------")
+    print(K_T_mas)
+    PSI_mas = []
+    step = 0
+    for e in X:
+        PSI_mas.append(psi(e, p, delta_t, R, a, betta_mas[step], c_mas[step]))
+        step = step + 1
+
+    plt.plot(X, PSI_mas, color="red", label="psi")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    
+    #построение решения с помощью явной схемы
+    c_mas_sh = []
+    betta_mas_sh = []
+    K_T_mas_sh = []
+    for i in range(I + 1):
+        if (i < (I + 1) / 2):
+            c_mas_sh.append(1)
+            betta_mas_sh.append(0.05)
+            K_T_mas_sh.append(0.1)
+        else:
+            c_mas_sh.append(1)
+            betta_mas_sh.append(0.5)
+            K_T_mas_sh.append(0.5)
+
+    t_axis, z_axis, u = full_schema(I, K, T, K_T_mas_sh, c_mas_sh, L, betta_mas_sh, p, delta_t, R, a, alpha)
+
+    #представление k-ого слоя в виде графика
+    plt.plot(z_axis, u[70], label="k слой разностной схемы", color="green")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
+    t_axis, z_axis, u_1 = full_schema(I, 100, T, K_T_mas_sh, c_mas_sh, L, betta_mas_sh, p, delta_t, R, a, alpha)
+    t_axis, z_axis, u_2 = full_schema(I, 500, T, K_T_mas_sh, c_mas_sh, L, betta_mas_sh, p, delta_t, R, a, alpha)
+    t_axis, z_axis, u_3 = full_schema(I, 1000, T, K_T_mas_sh, c_mas_sh, L, betta_mas_sh, p, delta_t, R, a, alpha)
+
+    plt.plot(z_axis, u_1[50], label="k слой РС u_1", color="green")
+    plt.plot(z_axis, u_2[50], label="k слой РС u_2", color="blue")
+    plt.plot(z_axis, u_3[50], label="k слой РС u_3", color="purple")
+    plt.legend()
+    plt.grid()
+    plt.show()
+    """""
